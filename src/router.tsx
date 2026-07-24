@@ -10,6 +10,8 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    // import.meta.env.BASE_URL obtiene '/Pijamas/' en producción y '/' en dev
+    basepath: import.meta.env.BASE_URL,
   });
 
   return router;
