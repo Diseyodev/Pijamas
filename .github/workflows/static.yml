@@ -41,8 +41,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Recuerda: './dist' para Vite o './build' para Create React App
-          path: './dist'
+          path: './.output/public'
 
       - name: Deploy to GitHub Pages
         id: deployment
