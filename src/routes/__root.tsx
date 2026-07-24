@@ -4,12 +4,11 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
-  HeadContent,
-  Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
 
-import appCss from "../styles.css?url";
+// Importamos los estilos directamente en React para el build de Vite SPA
+import "../styles.css";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -73,57 +72,16 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Perfect Pijamas — Pijamas femeninas suaves y elegantes" },
-      { name: "description", content: "Tienda de pijamas femeninas Perfect Pijamas. Satén, algodón,  encaje y muchos mas materiales, en todos los tonos que desees. Pide por WhatsApp." },
-      { name: "author", content: "Perfect Pijamas" },
-      { property: "og:title", content: "Perfect Pijamas — Pijamas femeninas suaves y elegantes" },
-      { property: "og:description", content: "Tienda de pijamas femeninas Perfect Pijamas. Satén, algodón,  encaje y muchos mas materiales, en todos los tonos que desees. Pide por WhatsApp." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Perfect Pijamas — Pijamas femeninas suaves y elegantes" },
-      { name: "twitter:description", content: "Tienda de pijamas femeninas Perfect Pijamas. Satén, algodón,  encaje y muchos mas materiales, en todos los tonos que desees. Pide por WhatsApp." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/961c859e-9c1b-4a80-9741-97f56e2ce14f/id-preview-3c04204a--cd47af29-a4d4-4da9-8686-59355f217f7c.lovable.app-1784757897500.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/961c859e-9c1b-4a80-9741-97f56e2ce14f/id-preview-3c04204a--cd47af29-a4d4-4da9-8686-59355f217f7c.lovable.app-1784757897500.png" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-    ],
-  }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
-
-function RootShell({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>
   );

@@ -1,8 +1,8 @@
-name: Deploy React app to GitHub Pages
+name: Deploy SPA to GitHub Pages
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main"] # Se ejecutará cada vez que hagas push a la rama main
   workflow_dispatch:
 
 permissions:
@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -41,7 +41,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './.output/public'
+          path: './dist' # Sube la carpeta dist limpia que acabamos de configurar
 
       - name: Deploy to GitHub Pages
         id: deployment
