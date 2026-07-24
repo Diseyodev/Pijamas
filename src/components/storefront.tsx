@@ -5,7 +5,7 @@ import { products, formatPrice, type Product } from "@/lib/products";
 import { CartProvider, useCart } from "@/lib/cart";
 
 // Número de WhatsApp de la tienda (formato internacional, sin +)
-const WHATSAPP_NUMBER = "57105768314";
+const WHATSAPP_NUMBER = "573105768314";
 
 function Header({ onOpenCart }: { onOpenCart: () => void }) {
   const { count } = useCart();
