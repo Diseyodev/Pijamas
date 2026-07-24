@@ -6,8 +6,9 @@ import { getRouter } from './router'
 
 const router = getRouter()
 
-// Asignamos el basepath para que coincida con el subdirectorio de GitHub Pages
-router.options.basepath = '/Pijamas'
+// import.meta.env.BASE_URL toma automáticamente '/' en local (dev)
+// y '/Pijamas/' en producción (build) según la propiedad 'base' en vite.config.ts
+router.options.basepath = import.meta.env.BASE_URL
 
 const queryClient = router.options.context.queryClient
 
