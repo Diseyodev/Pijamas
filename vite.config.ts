@@ -11,7 +11,4 @@ export default defineConfig(({ command }) => ({
     react(),
     tsconfigPaths(),
   ],
-  build: {
-    cssMinify: 'esbuild',
-  },
 }))
