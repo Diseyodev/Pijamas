@@ -116,6 +116,7 @@ import mE22 from "@/assets/ME22.jpg";
 import mE23 from "@/assets/ME23.jpg";
 import mE24 from "@/assets/ME24.jpg";
 
+export type Category = "Damas" | "Caballeros" | "Niños";
 
 export type Product = {
   id: string;
@@ -124,7 +125,7 @@ export type Product = {
   description2: string;
   price: number;
   images: string[];
-  category: string;
+  category: Category;
   sizes: string[];
 };
 
@@ -182,46 +183,46 @@ const getProductImages = (id: string): string[] => {
 };
 
 export const products: Product[] = [
-  { id: "M08",   name: "Pijama Ref. M08",   description: "Short con camisa botones.", description2:"Tela piel de durazno.", price: 60000,  images: getProductImages("M08"),   category: "Pijamas",   sizes: ["M"] },
-  { id: "M08B",  name: "Pijama Ref. M08B",  description: "Shorts con camisa bordada.", description2:"Tela piel de durazno.", price: 60000,  images: getProductImages("M08B"),  category: "Pijamas",   sizes: SIZES },
-  { id: "M08C",  name: "Pijama Ref. M08C",  description: "Pantalón con camisa botones.", description2:"Tela piel de durazno.", price: 80000,  images: getProductImages("M08C"),  category: "Pijamas",   sizes: ["S","M"] },
-  { id: "M08E",  name: "Pijama Ref. M08E",  description: "Trio de short, top y camisa botones.", description2:"Tela piel de durazno.", price: 75000,  images: getProductImages("M08E"),  category: "Pijamas",   sizes:  ["L","XL"]  },
-  { id: "M08EL", name: "Pijama Ref. M08EL", description: "Trio: Short con camisa y top.", description2:"Tela piel de durazno.", price: 75000,  images: getProductImages("M08EL"), category: "Pijamas",   sizes: SIZES },
-  { id: "ME09", name: "Pijama Ref. ME09", description: "Pantalón con blusa tiras.", description2:"Tela seda satinada.", price: 40000,  images: getProductImages("ME09"), category: "Pijamas",   sizes: ["S","M"] },
-  { id: "M10",   name: "Pijama Ref. M10",   description: "Batola con tiras.", description2:"Tela satín.", price: 25000,  images: getProductImages("M10"),   category: "Pijamas",   sizes:  ["S"]  },
-  { id: "ME12",   name: "Pijama Ref. ME12",   description: "Pantalón con top.", description2:"Tela piel de durazno.", price: 50000,  images: getProductImages("ME12"),   category: "Pijamas",   sizes:  ["S"]  },
-  { id: "ME13",   name: "Pijama Ref. ME13",   description: "Short con blusa tiras.", description2:"Tela piel de durazno.", price: 35000,  images: getProductImages("ME13"),   category: "Pijamas",   sizes:  ["S", "L"]  },
-  { id: "M15",   name: "Pijama Ref. M15",   description: "Pantalón con buso.", description2:"Tela piel de durazno.", price: 35000,  images: getProductImages("M15"),   category: "Pijamas",   sizes: ["2","4"] },
-  { id: "ME16", name: "Pijama Ref. ME16", description: "Batola.", description2:"Tela piel de durazno.", price: 35000,  images: getProductImages("ME16"),   category: "Pijamas",   sizes: SIZES },
-  { id: "ME19", name: "Pijama Ref. ME19", description: "Short con blusa tiras.", description2:"Tela fria.", price: 45000,  images: getProductImages("ME19"),   category: "Pijamas",   sizes: SIZES },
-  { id: "ME20", name: "Pijama Ref. ME20", description: "Short con camisa.", description2:"Tela rib.", price: 45000,  images: getProductImages("ME20"),   category: "Pijamas",   sizes: SIZES },
-  { id: "ME21", name: "Pijama Ref. ME21", description: "Batola.", description2:"Tela rib.", price: 45000,  images: getProductImages("ME21"),   category: "Pijamas",   sizes: SIZES },
-  { id: "ME22", name: "Pijama Ref. ME22", description: "Short con buso.", description2:"Tela algodón con textura.", price: 55000,  images: getProductImages("ME22"),   category: "Pijamas",   sizes: ["M","L","XL"] },
-  { id: "ME23", name: "Pijama Ref. ME23", description: "Pantalón con camisa.", description2:"Tela algodón con textura.", price: 75000,  images: getProductImages("ME23"),   category: "Pijamas",   sizes: SIZES },
-  { id: "ME24", name: "Pijama Ref. ME24", description: "Multiuso: Pantalón con buso.", description2:"Tela burda fría.", price: 110000,  images: getProductImages("ME24"),   category: "Pijamas",   sizes: SIZES },
-  { id: "0003", name: "Pijama Ref. 0003", description: "Pantalón con buso.", description2:"Tela piel de durazno.", price: 50000,  images: getProductImages("R0003"),   category: "Pijamas",   sizes:  ["S", "M", "L"] },
-  { id: "0007", name: "Pijama Ref. 0007", description: "Pantalón con camisa.", description2:"Tela piel de durazno.", price: 45000,  images: getProductImages("R0007"),   category: "Pijamas",   sizes:  SIZES },
-  { id: "0010", name: "Pijama Ref. 0010", description: "Capri con blusa esqueleto.", description2:"Tela piel de durazno.", price: 36000,  images: getProductImages("R0010"),   category: "Pijamas",   sizes:  SIZES },
-  { id: "0015", name: "Pijama Ref. 0015", description: "Short con blusa tiras.", description2:"Tela satín.", price: 35000,  images: getProductImages("R0015"), category: "Pijamas", sizes: SIZES },
-  { id: "0016", name: "Pijama Ref. 0016", description: "Pantalón con buso.", description2:"Tela piel de durazno.", price: 40000,  images: getProductImages("R0016"), category: "Pijamas", sizes:  SIZES },
-  { id: "0017", name: "Pijama Ref. 0017", description: "Enterizo.", description2:"Tela piel de durazno.", price: 30000,  images: getProductImages("R0017"), category: "Pijamas", sizes:  ["M","L","XL"] },
-  { id: "0020", name: "Pijama Ref. 0020", description: "Batola con panty.", description2:"Tela piel de durazno.", price: 30000,  images: getProductImages("R0020"), category: "Pijamas", sizes:  ["S","L"] },
-  { id: "0026", name: "Pijama Ref. 0026", description: "Pantalón con camisa corta.", description2:"Tela piel de durazno.", price: 40000,  images: getProductImages("R0026"), category: "Pijamas", sizes:  ["S","L","XL"] },
-  { id: "0027", name: "Pijama Ref. 0027", description: "Pantalón con camisa corta.", description2:"Tela rib.", price: 40000, images: getProductImages("R0027"), category: "Pijamas", sizes:  ["L","XL"] },
-  { id: "0028", name: "Pijama Ref. 0028", description: "Pantalón con buso.", description2:"Tela térmica.", price: 55000, images: getProductImages("R0028"), category: "Pijamas", sizes:  SIZES },
-  { id: "0029", name: "Pijama Ref. 0029", description: "Pantalón con blusa tiras.", description2:"Tela piel de durazo.", price: 35000, images: getProductImages("R0029"), category: "Pijamas", sizes:  SIZES },
-  { id: "0030", name: "Pijama Ref. 0030", description: "Short con blusa tiras.", description2:"Tela rib.", price: 38000, images: getProductImages("R0030"), category: "Pijamas", sizes:  ["S", "M", "L"] },
-  { id: "0031", name: "Pijama Ref. 0031", description: "Short con blusa tiras.", description2:"Tela piel de durazno.", price: 25000, images: getProductImages("R0031"), category: "Pijamas", sizes:  SIZES },
-  { id: "0032", name: "Pijama Ref. 0032", description: "Pantalón con camisa niño.", description2:"Tela piel de durazno.", price: 40000, images: getProductImages("R0032"), category: "Pijamas", sizes:  ["2-4","6-8","10-12"] },
-  { id: "0034", name: "Pijama Ref. 0034", description: "Pantalón con buso.", description2:"Tela térmica.", price: 48000, images: getProductImages("R0034"), category: "Pijamas", sizes: ["2-4","6-8","10-12","14-16"] },
-  { id: "0035", name: "Pijama Ref. 0035", description: "Pantalón con buso.", description2:"Tela térmica.", price: 48000, images: getProductImages("R0035"), category: "Pijamas", sizes: ["2-4","6-8","10-12","14-16"] },
-  { id: "0041", name: "Pijama Ref. 0041", description: "Short con camisa.", description2:"Tela piel de durazno.", price: 32000, images: getProductImages("R0041"), category: "Pijamas", sizes: ["L"] },
-  { id: "0042", name: "Pijama Ref. 0042", description: "Capri con camisa.", description2:"Tela piel de durazno.", price: 32000, images: getProductImages("R0042"), category: "Pijamas", sizes: ["S", "M"] },
-  { id: "0044", name: "Pijama Ref. 0044", description: "Pantaloneta.", description2:"Tela piel de durazno.", price: 24000, images: getProductImages("R0044"), category: "Pijamas", sizes: ["S"] },
-  { id: "0068", name: "Pijama Ref. 0068", description: "Pantalón con camisa caballero.", description2:"Tela piel de durazno.", price: 45000, images: getProductImages("R0068"), category: "Pijamas", sizes: SIZES },
-  { id: "0071", name: "Pijama Ref. 0071", description: "Pantalón con blusa tiras.", description2:"Tela piel de durazno.", price: 40000, images: getProductImages("R0071"), category: "Pijamas", sizes: SIZES },
-  { id: "0072", name: "Pijama Ref. 0072", description: "Capri con blusa tiras.", description2:"Tela piel de durazno.", price: 36000, images: getProductImages("R0072"), category: "Pijamas", sizes: ["S","L"] },
-  { id: "0077", name: "Pijama Ref. 0077", description: "Short con blusa tiras.", description2:"Tela satín.", price: 38000, images: getProductImages("R0077"), category: "Pijamas", sizes: SIZES },
+  { id: "M08",   name: "Pijama Ref. M08",   description: "Short con camisa botones.", description2:"Tela piel de durazno.", price: 60000,  images: getProductImages("M08"),   category: "Damas",   sizes: ["M"] },
+  { id: "M08B",  name: "Pijama Ref. M08B",  description: "Shorts con camisa bordada.", description2:"Tela piel de durazno.", price: 60000,  images: getProductImages("M08B"),  category: "Damas",   sizes: SIZES },
+  { id: "M08C",  name: "Pijama Ref. M08C",  description: "Pantalón con camisa botones.", description2:"Tela piel de durazno.", price: 80000,  images: getProductImages("M08C"),  category: "Damas",   sizes: ["S","M"] },
+  { id: "M08E",  name: "Pijama Ref. M08E",  description: "Trio de short, top y camisa botones.", description2:"Tela piel de durazno.", price: 75000,  images: getProductImages("M08E"),  category: "Damas",   sizes:  ["L","XL"]  },
+  { id: "M08EL", name: "Pijama Ref. M08EL", description: "Trio: Short con camisa y top.", description2:"Tela piel de durazno.", price: 75000,  images: getProductImages("M08EL"), category: "Damas",   sizes: SIZES },
+  { id: "ME09", name: "Pijama Ref. ME09", description: "Pantalón con blusa tiras.", description2:"Tela seda satinada.", price: 40000,  images: getProductImages("ME09"), category: "Damas",   sizes: ["S","M"] },
+  { id: "M10",   name: "Pijama Ref. M10",   description: "Batola con tiras.", description2:"Tela satín.", price: 25000,  images: getProductImages("M10"),   category: "Damas",   sizes:  ["S"]  },
+  { id: "ME12",   name: "Pijama Ref. ME12",   description: "Pantalón con top.", description2:"Tela piel de durazno.", price: 50000,  images: getProductImages("ME12"),   category: "Damas",   sizes:  ["S"]  },
+  { id: "ME13",   name: "Pijama Ref. ME13",   description: "Short con blusa tiras.", description2:"Tela piel de durazno.", price: 35000,  images: getProductImages("ME13"),   category: "Damas",   sizes:  ["S", "L"]  },
+  { id: "M15",   name: "Pijama Ref. M15",   description: "Pantalón con buso.", description2:"Tela piel de durazno.", price: 35000,  images: getProductImages("M15"),   category: "Niños",   sizes: ["2","4"] },
+  { id: "ME16", name: "Pijama Ref. ME16", description: "Batola.", description2:"Tela piel de durazno.", price: 35000,  images: getProductImages("ME16"),   category: "Damas",   sizes: SIZES },
+  { id: "ME19", name: "Pijama Ref. ME19", description: "Short con blusa tiras.", description2:"Tela fria.", price: 45000,  images: getProductImages("ME19"),   category: "Damas",   sizes: SIZES },
+  { id: "ME20", name: "Pijama Ref. ME20", description: "Short con camisa.", description2:"Tela rib.", price: 45000,  images: getProductImages("ME20"),   category: "Damas",   sizes: SIZES },
+  { id: "ME21", name: "Pijama Ref. ME21", description: "Batola.", description2:"Tela rib.", price: 45000,  images: getProductImages("ME21"),   category: "Damas",   sizes: SIZES },
+  { id: "ME22", name: "Pijama Ref. ME22", description: "Short con buso.", description2:"Tela algodón con textura.", price: 55000,  images: getProductImages("ME22"),   category: "Damas",   sizes: ["M","L","XL"] },
+  { id: "ME23", name: "Pijama Ref. ME23", description: "Pantalón con camisa.", description2:"Tela algodón con textura.", price: 75000,  images: getProductImages("ME23"),   category: "Damas",   sizes: SIZES },
+  { id: "ME24", name: "Pijama Ref. ME24", description: "Multiuso: Pantalón con buso.", description2:"Tela burda fría.", price: 110000,  images: getProductImages("ME24"),   category: "Damas",   sizes: SIZES },
+  { id: "0003", name: "Pijama Ref. 0003", description: "Pantalón con buso.", description2:"Tela piel de durazno.", price: 50000,  images: getProductImages("R0003"),   category: "Damas",   sizes:  ["S", "M", "L"] },
+  { id: "0007", name: "Pijama Ref. 0007", description: "Pantalón con camisa.", description2:"Tela piel de durazno.", price: 45000,  images: getProductImages("R0007"),   category: "Damas",   sizes:  SIZES },
+  { id: "0010", name: "Pijama Ref. 0010", description: "Capri con blusa esqueleto.", description2:"Tela piel de durazno.", price: 36000,  images: getProductImages("R0010"),   category: "Damas",   sizes:  SIZES },
+  { id: "0015", name: "Pijama Ref. 0015", description: "Short con blusa tiras.", description2:"Tela satín.", price: 35000,  images: getProductImages("R0015"), category: "Damas", sizes: SIZES },
+  { id: "0016", name: "Pijama Ref. 0016", description: "Pantalón con buso.", description2:"Tela piel de durazno.", price: 40000,  images: getProductImages("R0016"), category: "Damas", sizes:  SIZES },
+  { id: "0017", name: "Pijama Ref. 0017", description: "Enterizo.", description2:"Tela piel de durazno.", price: 30000,  images: getProductImages("R0017"), category: "Damas", sizes:  ["M","L","XL"] },
+  { id: "0020", name: "Pijama Ref. 0020", description: "Batola con panty.", description2:"Tela piel de durazno.", price: 30000,  images: getProductImages("R0020"), category: "Damas", sizes:  ["S","L"] },
+  { id: "0026", name: "Pijama Ref. 0026", description: "Pantalón con camisa corta.", description2:"Tela piel de durazno.", price: 40000,  images: getProductImages("R0026"), category: "Damas", sizes:  ["S","L","XL"] },
+  { id: "0027", name: "Pijama Ref. 0027", description: "Pantalón con camisa corta.", description2:"Tela rib.", price: 40000, images: getProductImages("R0027"), category: "Damas", sizes:  ["L","XL"] },
+  { id: "0028", name: "Pijama Ref. 0028", description: "Pantalón con buso.", description2:"Tela térmica.", price: 55000, images: getProductImages("R0028"), category: "Damas", sizes:  SIZES },
+  { id: "0029", name: "Pijama Ref. 0029", description: "Pantalón con blusa tiras.", description2:"Tela piel de durazo.", price: 35000, images: getProductImages("R0029"), category: "Damas", sizes:  SIZES },
+  { id: "0030", name: "Pijama Ref. 0030", description: "Short con blusa tiras.", description2:"Tela rib.", price: 38000, images: getProductImages("R0030"), category: "Damas", sizes:  ["S", "M", "L"] },
+  { id: "0031", name: "Pijama Ref. 0031", description: "Short con blusa tiras.", description2:"Tela piel de durazno.", price: 25000, images: getProductImages("R0031"), category: "Damas", sizes:  SIZES },
+  { id: "0032", name: "Pijama Ref. 0032", description: "Pantalón con camisa niño.", description2:"Tela piel de durazno.", price: 40000, images: getProductImages("R0032"), category: "Niños", sizes:  ["2-4","6-8","10-12"] },
+  { id: "0034", name: "Pijama Ref. 0034", description: "Pantalón con buso.", description2:"Tela térmica.", price: 48000, images: getProductImages("R0034"), category: "Niños", sizes: ["2-4","6-8","10-12","14-16"] },
+  { id: "0035", name: "Pijama Ref. 0035", description: "Pantalón con buso.", description2:"Tela térmica.", price: 48000, images: getProductImages("R0035"), category: "Niños", sizes: ["2-4","6-8","10-12","14-16"] },
+  { id: "0041", name: "Pijama Ref. 0041", description: "Short con camisa.", description2:"Tela piel de durazno.", price: 32000, images: getProductImages("R0041"), category: "Damas", sizes: ["L"] },
+  { id: "0042", name: "Pijama Ref. 0042", description: "Capri con camisa.", description2:"Tela piel de durazno.", price: 32000, images: getProductImages("R0042"), category: "Damas", sizes: ["S", "M"] },
+  { id: "0044", name: "Pijama Ref. 0044", description: "Pantaloneta.", description2:"Tela piel de durazno.", price: 24000, images: getProductImages("R0044"), category: "Caballeros", sizes: ["S"] },
+  { id: "0068", name: "Pijama Ref. 0068", description: "Pantalón con camisa caballero.", description2:"Tela piel de durazno.", price: 45000, images: getProductImages("R0068"), category: "Caballeros", sizes: SIZES },
+  { id: "0071", name: "Pijama Ref. 0071", description: "Pantalón con blusa tiras.", description2:"Tela piel de durazno.", price: 40000, images: getProductImages("R0071"), category: "Damas", sizes: SIZES },
+  { id: "0072", name: "Pijama Ref. 0072", description: "Capri con blusa tiras.", description2:"Tela piel de durazno.", price: 36000, images: getProductImages("R0072"), category: "Damas", sizes: ["S","L"] },
+  { id: "0077", name: "Pijama Ref. 0077", description: "Short con blusa tiras.", description2:"Tela satín.", price: 38000, images: getProductImages("R0077"), category: "Damas", sizes: SIZES },
 ];
 
 export const formatPrice = (n: number) =>

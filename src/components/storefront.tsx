@@ -1,11 +1,41 @@
 import { useState } from "react";
-import { ShoppingBag, X, Plus, Minus, Trash2, Sparkles, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
+import { ShoppingBag, X, Plus, Minus, Trash2, Sparkles, Share2, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
 import heroImg from "@/assets/hero-pajamas.jpg";
-import { products, formatPrice, type Product } from "@/lib/products";
+import { products, formatPrice, type Product, type Category } from "@/lib/products";
 import { CartProvider, useCart } from "@/lib/cart";
 
 // Número de WhatsApp de la tienda (formato internacional, sin +)
 const WHATSAPP_NUMBER = "573105768314";
+
+// Función utilitaria para compartir/preguntar por WhatsApp
+async function shareProductViaWhatsApp(product: Product, size?: string) {
+  const currentImgUrl = new URL(product.images[0], window.location.href).href;
+  const message = `¡Hola! Me interesa obtener más información sobre la *${product.name}* (${product.description})${size ? ` en talla *${size}*` : ""}.\n\nImagen: ${currentImgUrl}`;
+
+  // Intenta usar la API nativa de compartir (útil en móviles para adjuntar imagen como archivo)
+  if (navigator.share) {
+    try {
+      const response = await fetch(currentImgUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `${product.id}.jpg`, { type: blob.type });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: product.name,
+          text: message,
+          files: [file],
+        });
+        return;
+      }
+    } catch (e) {
+      console.warn("No se pudo compartir la imagen como archivo, usando WhatsApp Web URL como fallback", e);
+    }
+  }
+
+  // Fallback directo vía enlace a WhatsApp Web / App
+  const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  window.open(waUrl, "_blank");
+}
 
 function Header({ onOpenCart }: { onOpenCart: () => void }) {
   const { count } = useCart();
@@ -96,35 +126,27 @@ function ProductCard({ p }: { p: Product }) {
   return (
     <>
       <article className="group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card transition hover:shadow-[var(--shadow-soft)]">
-        {/* Contenedor de Imagen de altura fija (1:1 Aspect Ratio) */}
-        {/* Quitamos p-3 por completo */}
         <div className="relative aspect-square overflow-hidden bg-secondary">
-        <button
-          type="button"
-          onClick={() => setLightbox(true)}
-          aria-label={`Ampliar imagen de ${p.name}`}
-          className="block h-full w-full overflow-hidden"
-        >
-          <img
-            src={current}
-            alt={`${p.name} — imagen ${idx + 1}`}
-            width={1024}
-            height={1024}
-            loading="lazy"
-            /* 
-              Ajusta scale-110 para acercar un poco, 
-              o cambia a scale-115 o scale-120 para acercarla MÁS.
-            */
-            className="h-full w-full object-cover scale-110 transition duration-500 group-hover:scale-120"
-          />
-        </button>
+          <button
+            type="button"
+            onClick={() => setLightbox(true)}
+            aria-label={`Ampliar imagen de ${p.name}`}
+            className="block h-full w-full overflow-hidden"
+          >
+            <img
+              src={current}
+              alt={`${p.name} — imagen ${idx + 1}`}
+              width={1024}
+              height={1024}
+              loading="lazy"
+              className="h-full w-full object-cover scale-110 transition duration-500 group-hover:scale-120"
+            />
+          </button>
 
-          {/* Icono Zoom */}
           <span className="pointer-events-none absolute right-2 top-2 z-10 rounded-full bg-background/80 p-1.5 text-primary shadow-sm backdrop-blur-sm">
             <ZoomIn className="h-4 w-4" />
           </span>
 
-          {/* Miniaturas Superpuestas (Overlay) - Solo si hay más de 1 imagen */}
           {p.images.length > 1 && (
             <div className="absolute bottom-2 left-0 right-0 z-10 flex justify-center gap-1.5 px-3">
               {p.images.map((src, i) => (
@@ -148,9 +170,20 @@ function ProductCard({ p }: { p: Product }) {
           )}
         </div>
 
-        {/* Cuerpo del contenido del producto con alineación uniforme */}
         <div className="flex flex-1 flex-col p-5">
-          <span className="text-xs uppercase tracking-widest text-primary">{p.category}</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-widest text-primary">{p.category}</span>
+            {/* Botón rápido para consultar por WhatsApp */}
+            <button
+              onClick={() => shareProductViaWhatsApp(p, size)}
+              title="Preguntar por WhatsApp"
+              className="flex items-center gap-1 text-xs text-muted-foreground transition hover:text-[#25D366]"
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              <span>Consultar</span>
+            </button>
+          </div>
+
           <h3 className="mt-1 font-serif text-lg text-foreground">{p.name}</h3>
           
           <div className="mt-1 text-sm text-muted-foreground">
@@ -158,7 +191,6 @@ function ProductCard({ p }: { p: Product }) {
             {p.description2 && <p className="mt-0.5">{p.description2}</p>}
           </div>
 
-          {/* Bloque inferior (Tallas + Precio) empujado siempre hacia el fondo */}
           <div className="mt-auto pt-4">
             <div>
               <span className="text-xs text-muted-foreground">Talla:</span>
@@ -282,19 +314,42 @@ function Lightbox({
 }
 
 function Catalog() {
+  const [selectedCategory, setSelectedCategory] = useState<Category | "Todas">("Todas");
+
+  const categories: (Category | "Todas")[] = ["Todas", "Damas", "Caballeros", "Niños"];
+
+  const filteredProducts = selectedCategory === "Todas"
+    ? products
+    : products.filter((p) => p.category === selectedCategory);
+
   return (
     <section id="catalogo" className="mx-auto max-w-6xl px-6 py-20">
-      <div className="mb-10 flex items-end justify-between">
+      <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div>
           <span className="text-xs uppercase tracking-widest text-primary">Catálogo</span>
           <h2 className="mt-2 font-serif text-4xl text-foreground">Nuestra colección</h2>
         </div>
-        <p className="hidden max-w-sm text-sm text-muted-foreground md:block">
-          Cada pieza es escogida para brindarte comodidad y estilo cada noche.
-        </p>
+        
+        {/* Filtros por Categoría */}
+        <div className="flex flex-wrap gap-2">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`rounded-full px-4 py-2 text-xs font-medium transition ${
+                selectedCategory === cat
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "border border-border bg-background text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
+
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {products.map((p) => (
+        {filteredProducts.map((p) => (
           <ProductCard key={p.id} p={p} />
         ))}
       </div>
