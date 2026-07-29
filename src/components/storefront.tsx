@@ -92,15 +92,18 @@ function ProductCard({ p }: { p: Product }) {
   const [idx, setIdx] = useState(0);
   const [lightbox, setLightbox] = useState(false);
   const current = p.images[idx] ?? p.images[0];
+
   return (
     <>
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card transition hover:shadow-[var(--shadow-soft)]">
-      <div className="relative aspect-square overflow-hidden bg-secondary">
+      <article className="group flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card transition hover:shadow-[var(--shadow-soft)]">
+        {/* Contenedor de Imagen de altura fija (1:1 Aspect Ratio) */}
+        {/* Quitamos p-3 por completo */}
+        <div className="relative aspect-square overflow-hidden bg-secondary">
         <button
           type="button"
           onClick={() => setLightbox(true)}
           aria-label={`Ampliar imagen de ${p.name}`}
-          className="block h-full w-full"
+          className="block h-full w-full overflow-hidden"
         >
           <img
             src={current}
@@ -108,90 +111,107 @@ function ProductCard({ p }: { p: Product }) {
             width={1024}
             height={1024}
             loading="lazy"
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            /* 
+              Ajusta scale-110 para acercar un poco, 
+              o cambia a scale-115 o scale-120 para acercarla MÁS.
+            */
+            className="h-full w-full object-cover scale-110 transition duration-500 group-hover:scale-120"
           />
         </button>
-        <span className="pointer-events-none absolute right-2 top-2 rounded-full bg-background/80 p-1.5 text-primary shadow-sm">
-          <ZoomIn className="h-4 w-4" />
-        </span>
-        {p.images.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
-            {p.images.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setIdx(i)}
-                aria-label={`Ver imagen ${i + 1}`}
-                className={`h-2 w-2 rounded-full transition ${
-                  i === idx ? "bg-primary" : "bg-background/70 hover:bg-background"
-                }`}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-      {p.images.length > 1 && (
-        <div className="flex gap-2 border-b border-border/40 bg-background/40 px-3 py-2">
-          {p.images.map((src, i) => (
-            <button
-              key={i}
-              onClick={() => setIdx(i)}
-              className={`h-12 w-12 shrink-0 overflow-hidden rounded-md border transition ${
-                i === idx ? "border-primary ring-1 ring-primary" : "border-border hover:border-primary/60"
-              }`}
-              aria-label={`Miniatura ${i + 1}`}
-            >
-              <img src={src} alt="" className="h-full w-full object-cover" />
-            </button>
-          ))}
+
+          {/* Icono Zoom */}
+          <span className="pointer-events-none absolute right-2 top-2 z-10 rounded-full bg-background/80 p-1.5 text-primary shadow-sm backdrop-blur-sm">
+            <ZoomIn className="h-4 w-4" />
+          </span>
+
+          {/* Miniaturas Superpuestas (Overlay) - Solo si hay más de 1 imagen */}
+          {p.images.length > 1 && (
+            <div className="absolute bottom-2 left-0 right-0 z-10 flex justify-center gap-1.5 px-3">
+              {p.images.map((src, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIdx(i);
+                  }}
+                  className={`h-10 w-10 shrink-0 overflow-hidden rounded-lg border-2 shadow-sm transition-all ${
+                    i === idx
+                      ? "border-primary ring-2 ring-primary/30 scale-105"
+                      : "border-background/80 opacity-80 hover:opacity-100 hover:border-background"
+                  }`}
+                  aria-label={`Ver miniatura ${i + 1}`}
+                >
+                  <img src={src} alt="" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-      )}
-      <div className="flex flex-1 flex-col p-5">
-        <span className="text-xs uppercase tracking-widest text-primary">{p.category}</span>
-        <h3 className="mt-1 font-serif text-lg text-foreground">{p.name}</h3>
-        <p className="mt-1 flex-1 text-sm text-muted-foreground">{p.description}</p>
-        <div className="mt-3">
-          <span className="text-xs text-muted-foreground">Talla:</span>
-          <div className="mt-1 flex flex-wrap gap-1.5">
-            {p.sizes.map((s) => (
+
+        {/* Cuerpo del contenido del producto con alineación uniforme */}
+        <div className="flex flex-1 flex-col p-5">
+          <span className="text-xs uppercase tracking-widest text-primary">{p.category}</span>
+          <h3 className="mt-1 font-serif text-lg text-foreground">{p.name}</h3>
+          
+          <div className="mt-1 text-sm text-muted-foreground">
+            <p>{p.description}</p>
+            {p.description2 && <p className="mt-0.5">{p.description2}</p>}
+          </div>
+
+          {/* Bloque inferior (Tallas + Precio) empujado siempre hacia el fondo */}
+          <div className="mt-auto pt-4">
+            <div>
+              <span className="text-xs text-muted-foreground">Talla:</span>
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {p.sizes.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => {
+                      setSize(s);
+                      setError(false);
+                    }}
+                    className={`rounded-full border px-3 py-1 text-xs transition ${
+                      size === s
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background text-foreground hover:border-primary"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+              {error && <p className="mt-1 text-xs text-destructive">Selecciona una talla</p>}
+            </div>
+
+            <div className="mt-4 flex items-center justify-between">
+              <span className="font-semibold text-foreground">{formatPrice(p.price)}</span>
               <button
-                key={s}
-                onClick={() => { setSize(s); setError(false); }}
-                className={`rounded-full border px-3 py-1 text-xs transition ${
-                  size === s
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-background text-foreground hover:border-primary"
-                }`}
+                onClick={() => {
+                  if (!size) {
+                    setError(true);
+                    return;
+                  }
+                  add(p, size);
+                  setAdded(true);
+                  setTimeout(() => setAdded(false), 1200);
+                }}
+                className="rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition hover:opacity-90"
               >
-                {s}
+                {added ? "Agregada ✓" : "Agregar"}
               </button>
-            ))}
+            </div>
           </div>
-          {error && <p className="mt-1 text-xs text-destructive">Selecciona una talla</p>}
         </div>
-        <div className="mt-4 flex items-center justify-between">
-          <span className="font-semibold text-foreground">{formatPrice(p.price)}</span>
-          <button
-            onClick={() => {
-              if (!size) { setError(true); return; }
-              add(p, size);
-              setAdded(true);
-              setTimeout(() => setAdded(false), 1200);
-            }}
-            className="rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition hover:opacity-90"
-          >
-            {added ? "Agregada ✓" : "Agregar"}
-          </button>
-        </div>
-      </div>
-    </article>
-    <Lightbox
-      open={lightbox}
-      onClose={() => setLightbox(false)}
-      images={p.images}
-      index={idx}
-      setIndex={setIdx}
-      alt={p.name}
-    />
+      </article>
+
+      <Lightbox
+        open={lightbox}
+        onClose={() => setLightbox(false)}
+        images={p.images}
+        index={idx}
+        setIndex={setIdx}
+        alt={p.name}
+      />
     </>
   );
 }
