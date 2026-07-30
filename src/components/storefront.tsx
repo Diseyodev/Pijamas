@@ -1,11 +1,14 @@
-import { useState } from "react";
-import { ShoppingBag, X, Plus, Minus, Trash2, Sparkles, Share2, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { ShoppingBag, X, Plus, Minus, Trash2, Sparkles, Share2, ZoomIn, ChevronLeft, ChevronRight, SlidersHorizontal, RotateCcw } from "lucide-react";
 import heroImg from "@/assets/hero-pajamas.jpg";
 import { products, formatPrice, type Product, type Category } from "@/lib/products";
 import { CartProvider, useCart } from "@/lib/cart";
 
 // Número de WhatsApp de la tienda (formato internacional, sin +)
 const WHATSAPP_NUMBER = "573105768314";
+// Tallas disponibles para el filtro
+const AVAILABLE_SIZES = ["S", "M", "L", "XL", "2-4", "6-8", "10-12", "14-16"];
+type SortOrder = "default" | "price-asc" | "price-desc";
 
 // Función utilitaria para compartir/preguntar por WhatsApp
 async function shareProductViaWhatsApp(product: Product, size?: string) {
@@ -260,12 +263,30 @@ function Lightbox({
   onClose: () => void;
   images: string[];
   index: number;
-  setIndex: (i: number) => void;
+  setIndex: React.Dispatch<React.SetStateAction<number>> | ((i: number) => void);
   alt: string;
 }) {
   if (!open) return null;
+
   const prev = () => setIndex((index - 1 + images.length) % images.length);
   const next = () => setIndex((index + 1) % images.length);
+
+  // Escuchar teclas del teclado
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") {
+        prev();
+      } else if (e.key === "ArrowRight") {
+        next();
+      } else if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [index, images.length]);
+
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-foreground/80 p-4"
@@ -276,36 +297,40 @@ function Lightbox({
       <button
         onClick={onClose}
         aria-label="Cerrar"
-        className="absolute right-4 top-4 rounded-full bg-background/90 p-2 text-foreground hover:bg-background"
+        className="absolute right-4 top-4 z-10 rounded-full bg-background/90 p-2 text-foreground shadow-md transition hover:bg-background"
       >
         <X className="h-5 w-5" />
       </button>
+
       {images.length > 1 && (
         <button
           onClick={(e) => { e.stopPropagation(); prev(); }}
           aria-label="Anterior"
-          className="absolute left-4 rounded-full bg-background/90 p-2 text-foreground hover:bg-background"
+          className="absolute left-4 z-10 rounded-full bg-background/90 p-2 text-foreground shadow-md transition hover:bg-background"
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
       )}
+
       <img
         src={images[index]}
         alt={alt}
         onClick={(e) => e.stopPropagation()}
         className="max-h-[85vh] max-w-[92vw] rounded-xl object-contain shadow-2xl"
       />
+
       {images.length > 1 && (
         <button
           onClick={(e) => { e.stopPropagation(); next(); }}
           aria-label="Siguiente"
-          className="absolute right-4 rounded-full bg-background/90 p-2 text-foreground hover:bg-background"
+          className="absolute right-4 z-10 rounded-full bg-background/90 p-2 text-foreground shadow-md transition hover:bg-background"
         >
           <ChevronRight className="h-6 w-6" />
         </button>
       )}
+
       {images.length > 1 && (
-        <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-background/90 px-3 py-1 text-xs text-foreground">
+        <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-background/90 px-3 py-1 text-xs text-foreground shadow-md">
           {index + 1} / {images.length}
         </span>
       )}
@@ -314,45 +339,210 @@ function Lightbox({
 }
 
 function Catalog() {
-  const [selectedCategory, setSelectedCategory] = useState<Category | "Todas">("Todas");
+  // Estados para filtros
+  const [category, setCategory] = useState<Category | "Todas">("Todas");
+  const [selectedSize, setSelectedSize] = useState<string>("Todas");
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("default");
+  const [showFiltersMobile, setShowFiltersMobile] = useState<boolean>(false);
 
   const categories: (Category | "Todas")[] = ["Todas", "Damas", "Caballeros", "Niños"];
 
-  const filteredProducts = selectedCategory === "Todas"
-    ? products
-    : products.filter((p) => p.category === selectedCategory);
+  // Lógica de filtrado y ordenamiento en memoria
+  const filteredAndSortedProducts = useMemo(() => {
+    let result = [...products];
+
+    // 1. Filtrar por Categoría
+    if (category !== "Todas") {
+      result = result.filter((p) => p.category === category);
+    }
+
+    // 2. Filtrar por Talla
+    if (selectedSize !== "Todas") {
+      result = result.filter((p) => p.sizes.includes(selectedSize));
+    }
+
+    // 3. Filtrar por Precio Mínimo
+    if (minPrice !== "" && !isNaN(Number(minPrice))) {
+      result = result.filter((p) => p.price >= Number(minPrice));
+    }
+
+    // 4. Filtrar por Precio Máximo
+    if (maxPrice !== "" && !isNaN(Number(maxPrice))) {
+      result = result.filter((p) => p.price <= Number(maxPrice));
+    }
+
+    // 5. Ordenar por Precio
+    if (sortOrder === "price-asc") {
+      result.sort((a, b) => a.price - b.price);
+    } else if (sortOrder === "price-desc") {
+      result.sort((a, b) => b.price - a.price);
+    }
+
+    return result;
+  }, [category, selectedSize, minPrice, maxPrice, sortOrder]);
+
+  const resetFilters = () => {
+    setCategory("Todas");
+    setSelectedSize("Todas");
+    setMinPrice("");
+    setMaxPrice("");
+    setSortOrder("default");
+  };
+
+  const hasActiveFilters =
+    category !== "Todas" ||
+    selectedSize !== "Todas" ||
+    minPrice !== "" ||
+    maxPrice !== "" ||
+    sortOrder !== "default";
 
   return (
     <section id="catalogo" className="mx-auto max-w-6xl px-6 py-20">
+      {/* Encabezado del Catálogo */}
       <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div>
           <span className="text-xs uppercase tracking-widest text-primary">Catálogo</span>
           <h2 className="mt-2 font-serif text-4xl text-foreground">Nuestra colección</h2>
         </div>
-        
-        {/* Filtros por Categoría */}
-        <div className="flex flex-wrap gap-2">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`rounded-full px-4 py-2 text-xs font-medium transition ${
-                selectedCategory === cat
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "border border-border bg-background text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+
+        {/* Botón para desplegar filtros en dispositivos móviles */}
+        <button
+          onClick={() => setShowFiltersMobile(!showFiltersMobile)}
+          className="flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium text-foreground md:hidden"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          <span>Filtros y Orden</span>
+        </button>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredProducts.map((p) => (
-          <ProductCard key={p.id} p={p} />
-        ))}
+      {/* Contenedor de Filtros y Ordenamiento */}
+      <div
+        className={`mb-8 rounded-2xl border border-border/60 bg-card p-5 shadow-sm transition-all ${
+          showFiltersMobile ? "block" : "hidden md:block"
+        }`}
+      >
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Filtro por Categoría */}
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Categoría
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategory(cat)}
+                  className={`rounded-full px-3 py-1 text-xs transition ${
+                    category === cat
+                      ? "bg-primary text-primary-foreground font-medium"
+                      : "border border-border bg-background text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Filtro por Talla */}
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Talla
+            </label>
+            <select
+              value={selectedSize}
+              onChange={(e) => setSelectedSize(e.target.value)}
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+            >
+              <option value="Todas">Todas las tallas</option>
+              {AVAILABLE_SIZES.map((sz) => (
+                <option key={sz} value={sz}>
+                  Talla {sz}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filtro por Rango de Precio */}
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Rango de Precio (COP)
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                placeholder="Mín"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <span className="text-muted-foreground">-</span>
+              <input
+                type="number"
+                placeholder="Máx"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+          </div>
+
+          {/* Ordenar por Precio */}
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Ordenar por
+            </label>
+            <div className="relative">
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as SortOrder)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              >
+                <option value="default">Recomendados / Defecto</option>
+                <option value="price-asc">Precio: Menor a Mayor</option>
+                <option value="price-desc">Precio: Mayor a Menor</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Botón de Limpiar Filtros (Si hay alguno activo) */}
+        {hasActiveFilters && (
+          <div className="mt-4 flex items-center justify-between border-t border-border/40 pt-3">
+            <span className="text-xs text-muted-foreground">
+              Mostrando {filteredAndSortedProducts.length} productos
+            </span>
+            <button
+              onClick={resetFilters}
+              className="flex items-center gap-1.5 text-xs font-medium text-destructive hover:underline"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span>Restablecer filtros</span>
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Grid de Productos Filtrados */}
+      {filteredAndSortedProducts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground">
+          <p className="text-base font-medium">No se encontraron pijamas con los filtros aplicados.</p>
+          <button
+            onClick={resetFilters}
+            className="mt-3 rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition hover:opacity-90"
+          >
+            Ver todo el catálogo
+          </button>
+        </div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredAndSortedProducts.map((p) => (
+            <ProductCard key={p.id} p={p} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -524,6 +714,7 @@ function StorefrontInner() {
       </main>
       <Footer />
       <CartDrawer open={open} onClose={() => setOpen(false)} />
+      <WhatsAppFloatingButton />
     </div>
   );
 }
@@ -533,5 +724,27 @@ export default function Storefront() {
     <CartProvider>
       <StorefrontInner />
     </CartProvider>
+  );
+}
+
+function WhatsAppFloatingButton() {
+  const message = encodeURIComponent(
+    "¡Hola Perfect Pijamas! 🌸 Quisiera recibir asesoría personalizada para elegir una pijama."
+  );
+  const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+
+  return (
+    <a
+      href={waUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Asesoría por WhatsApp"
+      className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full bg-[#25D366] px-4 py-3 text-white shadow-lg transition-transform duration-300 hover:scale-105 hover:bg-[#20ba5a] active:scale-95"
+    >
+      <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current" aria-hidden="true">
+        <path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.7.2s-.8 1-1 1.2c-.2.2-.4.2-.7.1-.3-.1-1.3-.5-2.5-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.5.2-.2.2-.3.3-.5.1-.2.1-.4 0-.5 0-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5H7.5c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.2-.3-.3-.6-.4zM12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.7 1.5 5.3L2 22l4.8-1.5C8.4 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2z" />
+      </svg>
+      <span className="hidden text-sm font-medium sm:inline">¿Necesitas asesoría?</span>
+    </a>
   );
 }
