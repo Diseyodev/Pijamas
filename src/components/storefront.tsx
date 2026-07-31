@@ -7,7 +7,7 @@ import { CartProvider, useCart } from "@/lib/cart";
 // Número de WhatsApp de la tienda (formato internacional, sin +)
 const WHATSAPP_NUMBER = "573105768314";
 // Tallas disponibles para el filtro
-const AVAILABLE_SIZES = ["S", "M", "L", "XL", "2-4", "6-8", "10-12", "14-16"];
+const AVAILABLE_SIZES = ["S", "M", "L", "XL", "UNICA", "2", "4", "6", "8", "10", "12" , "14", "16", "2-4", "6-8", "10-12", "14-16"];
 type SortOrder = "default" | "price-asc" | "price-desc";
 
 // Función utilitaria para compartir/preguntar por WhatsApp
@@ -15,7 +15,6 @@ async function shareProductViaWhatsApp(product: Product, size?: string) {
   const currentImgUrl = new URL(product.images[0], window.location.href).href;
   const message = `¡Hola! Me interesa obtener más información sobre la *${product.name}* (${product.description})${size ? ` en talla *${size}*` : ""}.\n\nImagen: ${currentImgUrl}`;
 
-  // Intenta usar la API nativa de compartir (útil en móviles para adjuntar imagen como archivo)
   if (navigator.share) {
     try {
       const response = await fetch(currentImgUrl);
@@ -35,7 +34,6 @@ async function shareProductViaWhatsApp(product: Product, size?: string) {
     }
   }
 
-  // Fallback directo vía enlace a WhatsApp Web / App
   const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
   window.open(waUrl, "_blank");
 }
@@ -124,6 +122,15 @@ function ProductCard({ p }: { p: Product }) {
   const [error, setError] = useState(false);
   const [idx, setIdx] = useState(0);
   const [lightbox, setLightbox] = useState(false);
+
+  // Reiniciar estado interno si cambia el producto asignado
+  useEffect(() => {
+    setSize("");
+    setError(false);
+    setIdx(0);
+    setAdded(false);
+  }, [p.id]);
+
   const current = p.images[idx] ?? p.images[0];
 
   return (
@@ -176,7 +183,6 @@ function ProductCard({ p }: { p: Product }) {
         <div className="flex flex-1 flex-col p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-widest text-primary">{p.category}</span>
-            {/* Botón rápido para consultar por WhatsApp */}
             <button
               onClick={() => shareProductViaWhatsApp(p, size)}
               title="Preguntar por WhatsApp"
@@ -271,7 +277,6 @@ function Lightbox({
   const prev = () => setIndex((index - 1 + images.length) % images.length);
   const next = () => setIndex((index + 1) % images.length);
 
-  // Escuchar teclas del teclado
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
@@ -339,7 +344,6 @@ function Lightbox({
 }
 
 function Catalog() {
-  // Estados para filtros
   const [category, setCategory] = useState<Category | "Todas">("Todas");
   const [selectedSize, setSelectedSize] = useState<string>("Todas");
   const [minPrice, setMinPrice] = useState<string>("");
@@ -349,31 +353,25 @@ function Catalog() {
 
   const categories: (Category | "Todas")[] = ["Todas", "Damas", "Caballeros", "Niños"];
 
-  // Lógica de filtrado y ordenamiento en memoria
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...products];
 
-    // 1. Filtrar por Categoría
     if (category !== "Todas") {
       result = result.filter((p) => p.category === category);
     }
 
-    // 2. Filtrar por Talla
     if (selectedSize !== "Todas") {
       result = result.filter((p) => p.sizes.includes(selectedSize));
     }
 
-    // 3. Filtrar por Precio Mínimo
     if (minPrice !== "" && !isNaN(Number(minPrice))) {
       result = result.filter((p) => p.price >= Number(minPrice));
     }
 
-    // 4. Filtrar por Precio Máximo
     if (maxPrice !== "" && !isNaN(Number(maxPrice))) {
       result = result.filter((p) => p.price <= Number(maxPrice));
     }
 
-    // 5. Ordenar por Precio
     if (sortOrder === "price-asc") {
       result.sort((a, b) => a.price - b.price);
     } else if (sortOrder === "price-desc") {
@@ -400,14 +398,12 @@ function Catalog() {
 
   return (
     <section id="catalogo" className="mx-auto max-w-6xl px-6 py-20">
-      {/* Encabezado del Catálogo */}
       <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div>
           <span className="text-xs uppercase tracking-widest text-primary">Catálogo</span>
           <h2 className="mt-2 font-serif text-4xl text-foreground">Nuestra colección</h2>
         </div>
 
-        {/* Botón para desplegar filtros en dispositivos móviles */}
         <button
           onClick={() => setShowFiltersMobile(!showFiltersMobile)}
           className="flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium text-foreground md:hidden"
@@ -417,14 +413,12 @@ function Catalog() {
         </button>
       </div>
 
-      {/* Contenedor de Filtros y Ordenamiento */}
       <div
         className={`mb-8 rounded-2xl border border-border/60 bg-card p-5 shadow-sm transition-all ${
           showFiltersMobile ? "block" : "hidden md:block"
         }`}
       >
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Filtro por Categoría */}
           <div>
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Categoría
@@ -446,7 +440,6 @@ function Catalog() {
             </div>
           </div>
 
-          {/* Filtro por Talla */}
           <div>
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Talla
@@ -465,7 +458,6 @@ function Catalog() {
             </select>
           </div>
 
-          {/* Filtro por Rango de Precio */}
           <div>
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Rango de Precio (COP)
@@ -489,7 +481,6 @@ function Catalog() {
             </div>
           </div>
 
-          {/* Ordenar por Precio */}
           <div>
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Ordenar por
@@ -508,7 +499,6 @@ function Catalog() {
           </div>
         </div>
 
-        {/* Botón de Limpiar Filtros (Si hay alguno activo) */}
         {hasActiveFilters && (
           <div className="mt-4 flex items-center justify-between border-t border-border/40 pt-3">
             <span className="text-xs text-muted-foreground">
@@ -525,7 +515,6 @@ function Catalog() {
         )}
       </div>
 
-      {/* Grid de Productos Filtrados */}
       {filteredAndSortedProducts.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground">
           <p className="text-base font-medium">No se encontraron pijamas con los filtros aplicados.</p>
@@ -537,7 +526,11 @@ function Catalog() {
           </button>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        /* Clave dinámica para forzar la recreación del DOM al cambiar filtros */
+        <div 
+          key={`${category}-${selectedSize}-${sortOrder}-${minPrice}-${maxPrice}`} 
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {filteredAndSortedProducts.map((p) => (
             <ProductCard key={p.id} p={p} />
           ))}
@@ -702,6 +695,28 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   );
 }
 
+function WhatsAppFloatingButton() {
+  const message = encodeURIComponent(
+    "¡Hola Perfect Pijamas! 🌸 Quisiera recibir asesoría personalizada para elegir una pijama."
+  );
+  const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+
+  return (
+    <a
+      href={waUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Asesoría por WhatsApp"
+      className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full bg-[#25D366] px-4 py-3 text-white shadow-lg transition-transform duration-300 hover:scale-105 hover:bg-[#20ba5a] active:scale-95"
+    >
+      <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current" aria-hidden="true">
+        <path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.7.2s-.8 1-1 1.2c-.2.2-.4.2-.7.1-.3-.1-1.3-.5-2.5-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.5.2-.2.2-.3.3-.5.1-.2.1-.4 0-.5 0-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5H7.5c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.2-.3-.3-.6-.4zM12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.7 1.5 5.3L2 22l4.8-1.5C8.4 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2z" />
+      </svg>
+      <span className="hidden text-sm font-medium sm:inline">¿Necesitas asesoría?</span>
+    </a>
+  );
+}
+
 function StorefrontInner() {
   const [open, setOpen] = useState(false);
   return (
@@ -724,27 +739,5 @@ export default function Storefront() {
     <CartProvider>
       <StorefrontInner />
     </CartProvider>
-  );
-}
-
-function WhatsAppFloatingButton() {
-  const message = encodeURIComponent(
-    "¡Hola Perfect Pijamas! 🌸 Quisiera recibir asesoría personalizada para elegir una pijama."
-  );
-  const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
-
-  return (
-    <a
-      href={waUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Asesoría por WhatsApp"
-      className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full bg-[#25D366] px-4 py-3 text-white shadow-lg transition-transform duration-300 hover:scale-105 hover:bg-[#20ba5a] active:scale-95"
-    >
-      <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current" aria-hidden="true">
-        <path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.7.2s-.8 1-1 1.2c-.2.2-.4.2-.7.1-.3-.1-1.3-.5-2.5-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.5.2-.2.2-.3.3-.5.1-.2.1-.4 0-.5 0-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5H7.5c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.2-.3-.3-.6-.4zM12 2C6.5 2 2 6.5 2 12c0 1.9.5 3.7 1.5 5.3L2 22l4.8-1.5C8.4 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2z" />
-      </svg>
-      <span className="hidden text-sm font-medium sm:inline">¿Necesitas asesoría?</span>
-    </a>
   );
 }
